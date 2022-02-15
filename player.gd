@@ -8,26 +8,37 @@ extends Node2D
 var touching = 0
 
 onready var sprite = $AnimatedSprite
-
+onready var original
+onready var blue = false
+onready var health = 15 
 
 func _ready():
 	# The player follows the mouse cursor automatically, so there's no point
 	# in displaying the mouse cursor.
 	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	original = sprite.modulate
 
 
 func _input(event):
 	if event is InputEventMouseMotion:
 		position = event.position - Vector2(0, 16)
-
+	if event is InputEventMouseButton:
+		if event.pressed:
+			sprite.modulate = Color(0.1,0.50,1)
+			blue = true
+		else:
+			sprite.modulate = modulate
+			blue = false
 
 func _on_body_shape_entered(_body_id, _body, _body_shape, _local_shape):
 	touching += 1
-	if touching >= 1:
+	if touching >= 1: #and blue == false:
 		sprite.frame = 1
+		health = health - 1
+		print (health)
 
 
 func _on_body_shape_exited(_body_id, _body, _body_shape, _local_shape):
 	touching -= 1
-	if touching == 0:
+	if touching == 0: #or blue == true:
 		sprite.frame = 0

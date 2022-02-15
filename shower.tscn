@@ -30,5 +30,13 @@ frames = SubResource( 1 )
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
 shape = SubResource( 2 )
 
+[node name="Label" type="Label" parent="."]
+margin_right = 138.0
+margin_bottom = 33.0
+text = "Test Text"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [connection signal="body_shape_entered" from="Player" to="Player" method="_on_body_shape_entered"]
 [connection signal="body_shape_exited" from="Player" to="Player" method="_on_body_shape_exited"]

@@ -4,7 +4,7 @@ extends Node2D
 # efficient than using instancing and nodes, but requires more programming and
 # is less visual. Bullets are managed together in the `bullets.gd` script.
 
-const BULLET_COUNT = 500
+const BULLET_COUNT = 200
 const SPEED_MIN = 20
 const SPEED_MAX = 80
 
