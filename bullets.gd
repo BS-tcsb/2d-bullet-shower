@@ -4,7 +4,7 @@ extends Node2D
 # efficient than using instancing and nodes, but requires more programming and
 # is less visual. Bullets are managed together in the `bullets.gd` script.
 
-const BULLET_COUNT = 200
+const BULLET_COUNT = 125
 const SPEED_MIN = 20
 const SPEED_MAX = 80
 
@@ -12,11 +12,15 @@ const bullet_image = preload("res://bullet.png")
 
 var bullets = []
 var shape
-
+var right 
+var bottom
+var centerx
+var centery
 
 class Bullet:
 	var position = Vector2()
-	var speed = 1.0
+	var xspeed = 1.0
+	var yspeed = 1.0
 	# The body is stored as a RID, which is an "opaque" way to access resources.
 	# With large amounts of objects (thousands or more), it can be significantly
 	# faster to use RIDs compared to a high-level approach.
@@ -25,7 +29,10 @@ class Bullet:
 
 func _ready():
 	randomize()
-
+	right = get_viewport_rect().size.x
+	bottom = get_viewport_rect().size.y
+	centerx = right/2
+	centery = bottom/2
 	shape = Physics2DServer.circle_shape_create()
 	# Set the collision shape's radius for each bullet in pixels.
 	Physics2DServer.shape_set_data(shape, 8)
@@ -33,7 +40,9 @@ func _ready():
 	for _i in BULLET_COUNT:
 		var bullet = Bullet.new()
 		# Give each bullet its own speed.
-		bullet.speed = rand_range(SPEED_MIN, SPEED_MAX)
+		#bullet.speed = rand_range(SPEED_MIN, SPEED_MAX)
+		bullet.xspeed = rand_range(-SPEED_MAX, SPEED_MAX)
+		bullet.yspeed = rand_range(-SPEED_MAX, SPEED_MAX)
 		bullet.body = Physics2DServer.body_create()
 
 		Physics2DServer.body_set_space(bullet.body, get_world_2d().get_space())
@@ -46,8 +55,9 @@ func _ready():
 		# Place bullets randomly on the viewport and move bullets outside the
 		# play area so that they fade in nicely.
 		bullet.position = Vector2(
-			rand_range(0, get_viewport_rect().size.x) + get_viewport_rect().size.x,
-			rand_range(0, get_viewport_rect().size.y)
+			get_viewport_rect().size.x/2, get_viewport_rect().size.y/2
+			#rand_range(0, get_viewport_rect().size.x) + get_viewport_rect().size.x,
+			#rand_range(0, get_viewport_rect().size.y)
 		)
 		var transform2d = Transform2D()
 		transform2d.origin = bullet.position
@@ -63,14 +73,15 @@ func _process(_delta):
 
 func _physics_process(delta):
 	var transform2d = Transform2D()
-	var offset = get_viewport_rect().size.x + 16
 	for bullet in bullets:
-		bullet.position.x -= bullet.speed * delta
+		bullet.position.x -= bullet.xspeed * delta
+		bullet.position.y -= bullet.yspeed * delta
 
-		if bullet.position.x < -16:
+		if bullet.position.x < -16 or bullet.position.x > right + 16 or bullet.position.y < 16 or bullet.position.y > bottom + 16:
 			# The bullet has left the screen; move it back to the right.
-			bullet.position.x = offset
-
+			bullet.position.x = centerx
+			bullet.position.y = centery
+			
 		transform2d.origin = bullet.position
 
 		Physics2DServer.body_set_state(bullet.body, Physics2DServer.BODY_STATE_TRANSFORM, transform2d)

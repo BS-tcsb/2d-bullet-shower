@@ -11,10 +11,13 @@ onready var sprite = $AnimatedSprite
 onready var original
 onready var blue = false
 onready var health = 15 
+var immobile = false
+var immobiletimer = 0
+var immobiletimerconst = 1
 var label
-var isInvincible = false
-var invincibleTimer = 0
-var invincibleTimerConstant = 2
+var Iframes = false
+var IframeTimer = 0
+var IframeTimerConstant = 2
 var blueMeter = 5
 var blueMeterMax = 5
 var maxMeterWidth
@@ -31,32 +34,47 @@ func _ready():
 	maxMeterWidth = meter.rect_size.x
 
 func _process(delta):
-	if isInvincible == true:
-		sprite.frame = 1
-		invincibleTimer -= delta
-		if invincibleTimer <= 0:
-			isInvincible = false
-	elif touching >= 1: #and blue == false:
+	if immobile:
+		immobiletimer -= delta
+		if immobiletimer <= 0:
+			immobiletimer = 0
+			Input.warp_mouse_position(position)
+			immobile = false
+	if Iframes == true:
+		if not blue:
+			sprite.frame = 1
+		IframeTimer -= delta
+		if IframeTimer <= 0:
+			Iframes = false
+	elif touching >= 1 and blue == false:
 		sprite.frame = 1
 		health = health - 1
 		label.text = "Health:" + str(health)
-		isInvincible = true
-		invincibleTimer = invincibleTimerConstant
+		Iframes = true
+		IframeTimer = IframeTimerConstant
+		immobile = true
+		immobiletimer = immobiletimerconst
 	else: 
 		sprite.frame = 0
 	if blue:
 		blueMeter -= delta
+		if blueMeter <= 0:
+			blue = false
+			sprite.modulate = modulate
+			blueMeter = 0
 		meter.rect_size.x = maxMeterWidth*blueMeter/blueMeterMax
+		
 	elif blueMeter < blueMeterMax:
 		blueMeter += delta
 		meter.rect_size.x = maxMeterWidth*blueMeter/blueMeterMax
 
 func _input(event):
-	if event is InputEventMouseMotion:
+	if event is InputEventMouseMotion and immobile == false:
 		position = event.position - Vector2(0, 16)
 	if event is InputEventMouseButton:
 		if event.pressed and blueMeter > 0:
 			sprite.modulate = Color(0.1,0.50,1)
+			sprite.frame = 0
 			blue = true
 		else:
 			sprite.modulate = modulate
